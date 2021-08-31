@@ -33,17 +33,18 @@ if __name__ == '__main__':
     # output base directory
     output_base_dir = './tmp'
 
-    pipeline = ptm.Pipeline(ptm.splitter.KoSentSplitter(),
+    pipeline = ptm.Pipeline(ptm.splitter.NLTK(),
                             ptm.tokenizer.Komoran(),
                             ptm.lemmatizer.SejongPOSLemmatizer(),
                             ptm.helper.SelectWordOnly(),
                             ptm.helper.StopwordFilter(file=stopwords))
 
-    corpus = ptm.CorpusFromFile(input_path)
+    corpus = ptm.CorpusFromEojiFile(input_path)
     documents = []
     result = pipeline.processCorpus(corpus)
 
-    TaggedDocument = namedtuple('TaggedDocument', 'tags words')
+    print(len(result))
+    TaggedDocument = namedtuple('TaggedDocument', 't`ags words')
 
     i = 0
     for doc in result:
