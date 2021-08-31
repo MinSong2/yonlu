@@ -44,7 +44,7 @@ if __name__ == '__main__':
     result = pipeline.processCorpus(corpus)
 
     print(len(result))
-    TaggedDocument = namedtuple('TaggedDocument', 't`ags words')
+    TaggedDocument = namedtuple('TaggedDocument', 'tags words')
 
     i = 0
     for doc in result:
