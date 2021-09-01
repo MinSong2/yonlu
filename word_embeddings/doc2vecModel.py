@@ -65,16 +65,16 @@ class Doc2VecTrainer:
             # window=5 (both sides) approximates paper's 10-word total window size
             # PV-DM w/ concatenation adds a special null token to the vocabulary: '\x00'
             model = Doc2Vec(dm=1, dm_concat=1, vector_size=vector_size, window=window, negative=negative, hs=hs,
-                            min_count=vocab_min_count, workers=cores, docvecs_mapfile=docvecs_mapfile)
+                            min_count=vocab_min_count, workers=cores)
         elif algorithm == 'pv_dma':
             # PV-DM with average
             # window=5 (both sides) approximates paper's 10-word total window size
             model = Doc2Vec(dm=1, dm_mean=1, vector_size=vector_size, window=window, negative=negative, hs=hs,
-                            min_count=vocab_min_count, workers=cores, docvecs_mapfile=docvecs_mapfile)
+                            min_count=vocab_min_count, workers=cores)
         elif algorithm == 'pv_dbow':
             # PV-DBOW
             model = Doc2Vec(dm=0, vector_size=vector_size, window=window, negative=negative, hs=hs,
-                            min_count=vocab_min_count, workers=cores, docvecs_mapfile=docvecs_mapfile)
+                            min_count=vocab_min_count, workers=cores)
         else:
             raise ValueError('Unknown algorithm: %s' % algorithm)
 
@@ -82,14 +82,14 @@ class Doc2VecTrainer:
 
         logging.info('Build vocabulary')
         model.build_vocab(documents)
-        vocab_size = len(model.wv.vocab)
+        vocab_size = len(model.wv)
         logging.info('Vocabulary size: %d', vocab_size)
 
         target_dir = self.make_timestamped_dir(output_base_dir, algorithm, model.vector_size, num_epochs, window)
         vocab_path = os.path.join(target_dir, 'vocabulary')
         logging.info('Save vocabulary to: %s', vocab_path)
-        with open(vocab_path, 'w') as f:
-            term_counts = [[term, value.count] for term, value in model.wv.vocab.items()]
+        with open(vocab_path, 'w', encoding='UTF-8') as f:
+            term_counts = [[term, model.wv.get_vecattr(term, "count")] for term in model.wv.index_to_key]
             term_counts.sort(key=lambda x: -x[1])
             for x in term_counts:
                 f.write('%s, %d\n' % (x[0], x[1]))
@@ -103,7 +103,6 @@ class Doc2VecTrainer:
                         end_alpha=min_alpha)
 
             logging.info('Save model to: %s', target_dir)
-            model.delete_temporary_training_data(keep_doctags_vectors=True, keep_inference=True)
             model.save(os.path.join(target_dir, 'doc2vec.model'))
 
             model_meta = {
