@@ -1,9 +1,9 @@
 if __name__ == '__main__':
     from word_embeddings.doc2vecModel import Doc2VecSimilarity
     import logging
-    import pyTextMiner as ptm
+    import treform as ptm
 
-    model_file = './tmp/1594637816044_pv_dma_dim=100_window=5_epochs=20/doc2vec.model'
+    model_file = './tmp/1630455815150_pv_dma_dim=100_window=5_epochs=20/doc2vec.model'
     doc2vec = Doc2VecSimilarity()
     doc2vec.load_model(model_file)
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     test_sample1 = '중국 시장은 위축되었다'
 
-    pipeline = ptm.Pipeline(ptm.tokenizer.MeCab(mecab_path),
+    pipeline = ptm.Pipeline(ptm.tokenizer.Komoran(),
                             ptm.lemmatizer.SejongPOSLemmatizer(),
                             ptm.helper.SelectWordOnly(),
                             ptm.helper.StopwordFilter(file=stopwords))
