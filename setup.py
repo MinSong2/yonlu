@@ -1,5 +1,4 @@
 import setuptools
-import version
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -9,13 +8,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="yonlu", # Replace with your own username
-    version=version,
+    version="1.1.4",
     author="Min Song",
     author_email="min.song@yonsei.ac.kr",
     description="A deep learning based natural language understanding module",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/MinSong2/treform",
+    url="https://github.com/MinSong2/yonlu",
     packages=setuptools.find_packages(exclude = []),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -54,6 +53,8 @@ setuptools.setup(
         "tensorflow>=2.4.1",
         "beautifulsoup4",
         "benepar>=0.2.0",
+        "boto3",
+        "kobert-transformers",
         "treform"
     ],
     python_requires='>=3.7',
