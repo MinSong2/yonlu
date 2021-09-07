@@ -141,7 +141,7 @@ class Doc2VecSimilarity:
     def most_similar(self, document):
         print('most similart documents')
         doc_vec = self.doc2vec.infer_vector(document.split())
-        similars = self.doc2vec.docvecs.most_similar(positive=[doc_vec])
+        similars = self.doc2vec.dv.most_similar(positive=[doc_vec])
         return similars
 
     def most_similars(self, positive_document, negative_document):
