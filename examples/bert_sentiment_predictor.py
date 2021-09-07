@@ -30,8 +30,8 @@ elif mode == 'kr':
     stopwords = '../stopwords/stopwordsKor.txt'
     input_file = '../data/ratings_test.txt'
 
-    pipeline = ptm.Pipeline(ptm.splitter.KoSentSplitter(),
-                            ptm.tokenizer.MeCab(mecab_path),
+    pipeline = ptm.Pipeline(ptm.splitter.NLTK(),
+                            ptm.tokenizer.Komoran(),
                             ptm.lemmatizer.SejongPOSLemmatizer(),
                             ptm.helper.SelectWordOnly(),
                             ptm.helper.StopwordFilter(file=stopwords))
@@ -61,8 +61,7 @@ print(df.info())
 print('Number of test sentences: {:,}\n'.format(df.shape[0]))
 
 tokenizer = None
-# bert-base-multilingual-cased, bert-base-cased, monologg/kobert, monologg/distilkobert, bert_models/vocab_etri.list
-# bert_model_name='../bert_models/vocab_mecab.list'
+# bert-base-multilingual-cased, bert-base-cased, monologg/kobert, monologg/distilkobert
 bert_model_name = 'monologg/kobert'
 tokenizer = get_korean_tokenizer(bert_model_name)
 
@@ -76,11 +75,8 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #algorithm and saved_training_model goes hand-in-hand
 algorithm='transformers'
-#saved_training_model = './model_save/best_model_state.bin'
-if algorithm=='transformers':
-    saved_training_model = './model_save/best_model_state.bin'
-else:
-    saved_training_model = './model_save/best_model_states.bin'
+
+saved_training_model = './model_save/best_model_state.bin'
 
 predictor.load_model(saved_training_model)
 

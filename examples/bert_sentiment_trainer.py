@@ -1,15 +1,15 @@
 from transformers import BertForSequenceClassification
 
-from py_bert.bert_dataset import PYBERTDataset
-from py_bert.bert_classification_model import PYBERTClassifier, PYBERTClassifierGenAtten, PYBertForSequenceClassification
-from py_bert.bert_trainer import PYBERTTrainer
-from py_bert.bert_util import create_data_loader, add_sentiment_label, convert_to_df, get_korean_tokenizer
+from bert.bert_dataset import PYBERTDataset
+from bert.bert_classification_model import PYBERTClassifier, PYBERTClassifierGenAtten, PYBertForSequenceClassification
+from bert.bert_trainer import PYBERTTrainer
+from bert.bert_util import create_data_loader, add_sentiment_label, convert_to_df, get_korean_tokenizer
 from transformers import BertModel, BertTokenizer
 from sklearn.model_selection import train_test_split
 
-from py_bert.tokenization_kobert import KoBertTokenizer
+from bert.tokenization_kobert import KoBertTokenizer
 
-import pyTextMiner as ptm
+import treform as ptm
 import torch
 import numpy as np
 import pandas as pd
@@ -26,8 +26,8 @@ elif mode == 'kr':
     stopwords = '../stopwords/stopwordsKor.txt'
     input_file = '../data/ratings_train.txt'
 
-    pipeline = ptm.Pipeline(ptm.splitter.KoSentSplitter(),
-                            ptm.tokenizer.MeCab(mecab_path),
+    pipeline = ptm.Pipeline(ptm.splitter.NLTK(),
+                            ptm.tokenizer.Komoran(),
                             ptm.lemmatizer.SejongPOSLemmatizer(),
                             ptm.helper.SelectWordOnly(),
                             ptm.helper.StopwordFilter(file=stopwords))
@@ -68,8 +68,7 @@ df_val, df_test = train_test_split(df_test, test_size=0.5, random_state=RANDOM_S
 print(df_train.shape, df_val.shape, df_test.shape)
 
 tokenizer = None
-#bert-base-multilingual-cased, bert-base-cased, monologg/kobert, monologg/distilkobert, bert_models/vocab_etri.list
-#bert_model_name='../bert_models/vocab_mecab.list'
+#bert-base-multilingual-cased, bert-base-cased, monologg/kobert, monologg/distilkobert, monologg/kobert-lm
 bert_model_name='monologg/kobert'
 tokenizer =get_korean_tokenizer(bert_model_name)
 
@@ -101,10 +100,7 @@ elif classifier == 'transformers':
 model = model.to(device)
 
 algorithm='transformers' #transformers or non_transformers
-if algorithm =='transformers':
-    torch_model_name='best_model_state.bin'
-else:
-    torch_model_name = 'best_model_states.bin'
+torch_model_name='best_model_state.bin'
 
 #BERT authors suggests epoch from 2 to 4
 num_epochs = 2

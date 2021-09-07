@@ -17,7 +17,7 @@ def get_pretrained_model(pretrained_type):
     if pretrained_type == 'etri':
         # use etri tokenizer
         from bert.tokenization_korbert import BertTokenizer
-        tokenizer_path = 'D:\\python_workspace\\pyTextMiner\\bert_models\\vocab_mecab.list'
+        tokenizer_path = 'bert_models/vocab_mecab.list'
         tokenizer = BertTokenizer.from_pretrained(
             tokenizer_path, do_lower_case=False)
         vocab = tokenizer.vocab
@@ -42,7 +42,7 @@ import treform as ptm
 
 text = "예로부터 말이 많은 사람은 말로 망하고 밤중에 말 타고 토끼를 데리고 도망치는 경우가 많다."
 mecab_path='C:\\mecab\\mecab-ko-dic'
-mecab = ptm.tokenizer.MeCab(mecab_path)
+mecab = ptm.tokenizer.Komoran()
 pos = mecab.inst.pos(text)
 pos_text = ''
 for word_pos in pos:
