@@ -1,5 +1,6 @@
 import platform
 
+import gensim
 import numpy as np
 from gensim import models
 import matplotlib.font_manager as fm
@@ -14,7 +15,7 @@ from sklearn import manifold #MSD, t-SNE
 class visualizeW2V:
     def __init__(self):
         self.vf = '../embeddings/word2vec/korean_wiki_w2v.bin'
-        self.vecs = models.KeyedVectors.load_word2vec_format(self.vf, binary=True, unicode_errors='ignore')
+        self.vecs = gensim.models.KeyedVectors.load_word2vec_format(self.vf, binary=True, unicode_errors='ignore')
         self.vecs.init_sims(True)
 
     def show_closest_line(self, word, n):
@@ -57,14 +58,14 @@ class visualizeW2V:
         tops = self.vecs.similar_by_word(word, topn=n, restrict_vocab=None)
         items = [word] + [x[0] for x in tops]
 
-        wvecs = np.array([self.vecs.word_vec(wd, use_norm=True) for wd in items])
+        wvecs = np.array([self.vecs.word_vec(wd) for wd in items])
 
-        if method is "PCA":
+        if method == "PCA":
             spca = sPCA(n_components=2)
             coords = spca.fit_transform(wvecs)
             # print('Explained variation per principal component:', spca.explained_variance_ratio_, "Total:", sum(spca.explained_variance_ratio_))
 
-        elif method is "tSNE":
+        elif method == "tSNE":
             tsne = manifold.TSNE(n_components=2)
             coords = tsne.fit_transform(wvecs)
             # print("kl-divergence: %0.8f" % tsne.kl_divergence_)
@@ -74,7 +75,7 @@ class visualizeW2V:
             coords = tsne.fit_transform(wvecs)
             # print("kl-divergence: %0.8f" % tsne.kl_divergence_)
 
-        elif method is "MDS":
+        elif method == "MDS":
             dists = np.zeros((len(items), len(items)))
             for i, item1 in enumerate(items):
                 for j, item2 in enumerate(items):
