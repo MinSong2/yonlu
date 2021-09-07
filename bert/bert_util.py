@@ -1,10 +1,10 @@
 
 from torch.utils.data import Dataset, DataLoader
-from bert_dataset import PYBERTDataset
+from bert.bert_dataset import PYBERTDataset
 import pandas as pd
 from transformers import BertModel, BertTokenizer
-from tokenization_kobert import KoBertTokenizer
-from tokenization_korbert import KorBertTokenizer
+from bert.tokenization_kobert import KoBertTokenizer
+from bert.tokenization_hanbert import HanBertTokenizer
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
@@ -13,8 +13,8 @@ def get_korean_tokenizer(bert_model_name):
     tokenizer = None
     if bert_model_name.startswith('monologg'):
         tokenizer = KoBertTokenizer.from_pretrained(bert_model_name)
-    elif 'etri' or 'mecab' in bert_model_name:
-        tokenizer = KorBertTokenizer.from_pretrained(os.path.abspath(bert_model_name))
+    elif 'hanbert' in bert_model_name:
+        tokenizer = HanBertTokenizer.from_pretrained(os.path.abspath(bert_model_name))
     else:
         tokenizer = BertTokenizer.from_pretrained(bert_model_name)
 

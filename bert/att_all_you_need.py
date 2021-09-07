@@ -7,7 +7,7 @@ from torch.autograd import Variable
 import matplotlib.pyplot as plt
 import seaborn
 seaborn.set_context(context="talk")
-
+from PIL import Image
 
 class EncoderDecoder(nn.Module):
     """
@@ -47,6 +47,8 @@ class Generator(nn.Module):
     def forward(self, x):
         return F.log_softmax(self.proj(x), dim=-1)
 
+im = Image.open('../images/ModalNet-21.png')
+im.show()
 
 def clones(module, N):
     "Produce N identical layers."
@@ -164,7 +166,11 @@ Below the attention mask shows the position each tgt word (row) is allowed to lo
 '''
 plt.figure(figsize=(5,5))
 plt.imshow(subsequent_mask(20)[0])
-None
+plt.show()
+
+
+im = Image.open('../images/ModalNet-19.png')
+im.show()
 
 ''''
 An attention function can be described as mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.
@@ -186,6 +192,8 @@ def attention(query, key, value, mask=None, dropout=None):
         p_attn = dropout(p_attn)
     return torch.matmul(p_attn, value), p_attn
 
+im = Image.open('../images/ModalNet-20.png')
+im.show()
 
 class MultiHeadedAttention(nn.Module):
     '''
@@ -438,7 +446,7 @@ class LabelSmoothing(nn.Module):
         assert x.size(1) == self.size
         true_dist = x.data.clone()
         true_dist.fill_(self.smoothing / (self.size - 2))
-        true_dist.scatter_(1, target.data.unsqueeze(1), self.confidence)
+        true_dist.scatter_(1, target.data.unsqueeze(1).data.cpu().long(), self.confidence)
         true_dist[:, self.padding_idx] = 0
         mask = torch.nonzero(target.data == self.padding_idx)
         if mask.dim() > 0:
@@ -457,18 +465,18 @@ v = crit(Variable(predict.log()),
 
 # Show the target distributions expected by the system.
 plt.imshow(crit.true_dist)
-None
+plt.show()
 
 crit = LabelSmoothing(5, 0, 0.1)
 def loss(x):
     d = x + 3 * 1
     predict = torch.FloatTensor([[0, x / d, 1 / d, 1 / d, 1 / d],
                                  ])
-    #print(predict)
-    return crit(Variable(predict.log()),
-                 Variable(torch.LongTensor([1]))).data[0]
+    print(predict)
+    return crit(Variable(predict.log()),  Variable(torch.LongTensor([1]))).data
+
 plt.plot(np.arange(1, 100), [loss(x) for x in range(1, 100)])
-None
+plt.show()
 
 '''
 A First Example
@@ -500,7 +508,7 @@ class SimpleLossCompute:
         if self.opt is not None:
             self.opt.step()
             self.opt.optimizer.zero_grad()
-        return loss.data[0] * norm
+        return loss.data * norm
 
 # Train the simple copy task.
 V = 11

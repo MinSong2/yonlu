@@ -50,17 +50,10 @@ class PYBERTTrainer:
                 # (source: https://stackoverflow.com/questions/48001598/why-do-we-need-to-call-zero-grad-in-pytorch)
                 model.zero_grad()
 
-                # Perform a forward pass (evaluate the model on this training batch).
-                # The documentation for this `model` function is here:
-                # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
-                # It returns different numbers of parameters depending on what arguments
-                # arge given and what flags are set. For our useage here, it returns
-                # the loss (because we provided labels) and the "logits"--the model
-                # outputs prior to activation.
                 loss, logits = model(input_ids=input_ids,
                                      token_type_ids=token_type_ids,
                                      attention_mask=attention_mask,
-                                     labels=targets)
+                                     labels=targets, return_dict=False)
 
                 pred = torch.argmax(F.softmax(logits), dim=1)
                 correct = pred.eq(targets)
@@ -147,7 +140,7 @@ class PYBERTTrainer:
                     (loss, logits) = model(input_ids,
                                            token_type_ids=None,
                                            attention_mask=attention_mask,
-                                           labels=targets)
+                                           labels=targets, return_dict=False)
 
                     # Accumulate the validation loss.
                     total_eval_loss += loss.item()
@@ -302,17 +295,13 @@ class PYBERTTrainer:
 
         print("Saving model to %s" % output_dir)
 
-        if algorithm == 'transformers':
-            # Save a trained model, configuration and tokenizer using `save_pretrained()`.
-            # They can then be reloaded using `from_pretrained()`
-            model_to_save = model.module if hasattr(model,
-                                                'module') else model  # Take care of distributed/parallel training
-            model_to_save.save_pretrained(output_dir)
-            tokenizer.save_pretrained(output_dir)
 
+        # Save a trained model, configuration and tokenizer using `save_pretrained()`.
+        # They can then be reloaded using `from_pretrained()`
+        #model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+        #model_to_save.save_pretrained(output_dir)
         torch.save(model, os.path.join(output_dir, torch_model_name))
-        # Good practice: save your training arguments together with the trained model
-        # torch.save(args, os.path.join(output_dir, 'training_args.bin'))
+
 
     def summanry_training_stats(self):
         # Display floats with two decimal places.

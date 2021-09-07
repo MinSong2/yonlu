@@ -8,7 +8,8 @@ from sklearn.metrics import matthews_corrcoef
 import numpy as np
 import torch.nn.functional as F
 
-from py_bert.bert_dataset import PYBERTDataset
+from bert.bert_classification_model import PYBERTClassifier
+from bert.bert_dataset import PYBERTDataset
 
 
 class bert_predictor:
@@ -112,7 +113,8 @@ class bert_predictor:
                 if algorithm == 'transformers':
                     outputs = self.model(input_ids,
                                          token_type_ids=None,
-                                         attention_mask=attention_mask)
+                                         attention_mask=attention_mask,
+                                         return_dict=False)
                 else:
                     if self.model.name() == 'PYBERTClassifier':
                         outputs = self.model(
