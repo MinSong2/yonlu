@@ -1,5 +1,6 @@
 
 from transformers import BertTokenizer, BertModel
+from bert.load_kobert_model import get_kobert_model
 
 # OPTIONAL: if you want to have more information on what's happening, activate the logger as follows
 import logging
@@ -16,11 +17,7 @@ import torch
 def get_pretrained_model(pretrained_type):
     if pretrained_type == 'etri':
         # use etri tokenizer
-        from bert.tokenization_korbert import BertTokenizer
-        tokenizer_path = 'bert_models/vocab_mecab.list'
-        tokenizer = BertTokenizer.from_pretrained(
-            tokenizer_path, do_lower_case=False)
-        vocab = tokenizer.vocab
+        print('not supported')
     elif pretrained_type == 'skt':
         # use gluonnlp tokenizer
         import gluonnlp as nlp
@@ -30,13 +27,17 @@ def get_pretrained_model(pretrained_type):
         tokenizer = nlp.data.BERTSPTokenizer(
             path=tokenizer_path, vocab=vocab, lower=False)
         vocab = tokenizer.vocab.token_to_idx
+    elif pretrained_type == 'kobert':
+        from bert.tokenization_kobert import KoBertTokenizer
+        tokenizer = KoBertTokenizer.from_pretrained('monologg/kobert')
+
     else:
         TypeError('Invalid pretrained model type')
-    return tokenizer, vocab
+    return tokenizer
 
-tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
+#tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
 
-#tokenizer, vocab = get_pretrained_model('kobert')
+tokenizer = get_pretrained_model('kobert')
 
 import treform as ptm
 
@@ -59,7 +60,7 @@ tokenized_text = tokenizer.tokenize(marked_text)
 # Print out the tokens.
 print (tokenized_text)
 
-print(list(tokenizer.vocab.keys())[5000:5020])
+#print(list(tokenizer.vocab.keys())[5000:5020])
 
 # Map the token strings to their vocabulary indeces.
 indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
@@ -90,7 +91,9 @@ segments_tensors = torch.tensor([segments_ids])
 device = torch.device("cpu")
 
 # Load pre-trained model (weights)
-model = BertModel.from_pretrained('bert-base-multilingual-cased',output_hidden_states = True,)
+#model = BertModel.from_pretrained('bert-base-multilingual-cased',output_hidden_states = True,)
+
+model = BertModel.from_pretrained('monologg/kobert', output_hidden_states = True,)
 
 #model = BertModel.from_pretrained('D:\\python_workspace\\pyTextMiner\\bert_models\\pytorch_model.bin',
 #                                  output_hidden_states = True,)
