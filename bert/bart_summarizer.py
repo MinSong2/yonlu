@@ -3,12 +3,12 @@ from pathlib import Path
 
 import torch
 import logging
-from transformers import BartTokenizer, BartForConditionalGeneration, BartConfig
+from transformers import BartTokenizer, BartForConditionalGeneration, BartConfig, PreTrainedTokenizerFast
 import gdown
 
 class BartSumSummarizer():
     def __init__(self, device=None, checkpoint=None, state_dict_key='model', pretrained="facebook/bart-large-cnn",
-                 hg_transformers=True):
+                 hg_transformers=True, mode='ko'):
         if not hg_transformers and checkpoint:
             raise Exception("hg_transformers must be set to True in order to load from checkpoint")
 
@@ -41,8 +41,12 @@ class BartSumSummarizer():
             self.tokenizer = tokenizer
         else:
             if hg_transformers:
-                bart = BartForConditionalGeneration.from_pretrained(pretrained)
-                tokenizer = BartTokenizer.from_pretrained(pretrained)
+                if mode == 'en':
+                    bart = BartForConditionalGeneration.from_pretrained(pretrained)
+                    tokenizer = BartTokenizer.from_pretrained(pretrained)
+                elif mode == 'ko':
+                    bart = BartForConditionalGeneration.from_pretrained('hyunwoongko/kobart')
+                    tokenizer = PreTrainedTokenizerFast.from_pretrained('hyunwoongko/kobart')
                 self.tokenizer = tokenizer
             else:
                 bart = torch.hub.load('pytorch/fairseq', pretrained)
