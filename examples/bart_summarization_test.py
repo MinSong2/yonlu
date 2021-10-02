@@ -29,6 +29,7 @@ parser.add_argument('--bart_state_dict_key', default='model', type=str, metavar=
                     help='model state_dict key to load from pickle file specified with --bart_checkpoint (default: "model")')
 parser.add_argument('--bart_fairseq', action='store_true',
                     help='Use fairseq model from torch hub instead of huggingface transformers library models. Can not use --bart_checkpoint if this option is supplied.')
+parser.add_argument('--mode', default='ko', type=str, help='either Korean or English huggingface model')
 
 args = parser.parse_args()
 
@@ -36,10 +37,11 @@ logger.info("Loading Model")
 
 summarizer = summerizer.BartSumSummarizer(checkpoint=args.bart_checkpoint,
                         state_dict_key=args.bart_state_dict_key,
-                        hg_transformers=(not args.bart_fairseq))
+                        hg_transformers=(not args.bart_fairseq),
+                        mode=args.mode)
 
 
-f = open("../data/sample_data_summary.txt", "r", encoding="UTF-8")
+f = open("../data/sample_data_summary_ko.txt", "r", encoding="UTF-8")
 text = f.read()
 f.close()
 
