@@ -105,7 +105,7 @@ class PYBERTTrainer:
                 scheduler.step()
                 optimizer.zero_grad()
 
-        avg_train_avg = float(correct_predictions) / float(len(data_loader))*10
+        avg_train_avg = float(correct_predictions) / float(len(data_loader.dataset))*100
         # Calculate the average loss over all of the batches.
         avg_train_loss = total_train_loss / len(data_loader)
 
@@ -173,7 +173,7 @@ class PYBERTTrainer:
                     total_eval_loss += loss.item()
 
         # Report the final accuracy for this validation run.
-        avg_val_accuracy = float(total_eval_accuracy) / float(len(data_loader))*10
+        avg_val_accuracy = float(total_eval_accuracy) / float(len(data_loader.dataset))*100
 
         # Calculate the average loss over all of the batches.
         avg_val_loss = total_eval_loss / len(data_loader)
