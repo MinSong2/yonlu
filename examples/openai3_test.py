@@ -3,9 +3,11 @@ import openai
 import glob
 from bert.gpt3 import GPT
 from bert.gpt3 import Example
+from key.aikey import AiKey
+
+openai.api_key = AiKey().key
 
 
-openai.api_key = 'sk-xLc70hR5xZMw7pqMOSt66T3BlbkFjNeC65v7BBfqkqGRjm8r'
 
 
 gpt = GPT(engine="davinci",

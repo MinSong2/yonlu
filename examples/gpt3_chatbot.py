@@ -1,7 +1,8 @@
 import os
 import openai
+from key.aikey import AiKey
 
-openai.api_key = "YOUR_KEY"
+openai.api_key = AiKey().key
 completion = openai.Completion()
 
 start_chat_log = '''Human: Hello, who are you?
