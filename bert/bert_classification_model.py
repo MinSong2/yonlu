@@ -2,7 +2,7 @@ from transformers import BertModel, BertForSequenceClassification
 from torch import nn, optim
 import torch
 import os
-from kobert_transformers import get_kobert_model
+# from kobert_transformers import get_kobert_model
 
 class PYBERTClassifier(nn.Module):
     '''

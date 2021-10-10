@@ -2,6 +2,7 @@
 ###### Requirements with Version Specifiers ######
 #   See https://www.python.org/dev/peps/pep-0440/#version-specifiers
 konlpy >= 0.5.2
+#tweepy ==3.10
 soynlp >= 0.0.493
 transformers==4.5.1
 gensim

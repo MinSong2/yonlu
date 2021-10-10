@@ -303,6 +303,28 @@ class PYBERTTrainer:
         torch.save(model, os.path.join(output_dir, torch_model_name))
 
 
+    def checkpoint(self):
+
+        pass
+
+    def _save_history(self, path='./checkpoint/', file_name='model_history.pkl'):
+        history = dict()
+        history['training_stats'] = self.training_stats
+        history['df_stats'] = self.df_stats
+
+        import pickle
+        with open(path+file_name,'wb') as f:
+            pickle.dump(history, f)
+
+    def _load_history(self, path='./checkpoint/model_history.pkl'):
+        import pickle
+        with open(path, 'rb') as f:
+            history = pickle.load(f)
+
+        self.training_stats = history['training_stats']
+        self.df_stats = history['df_stats']
+
+
     def summanry_training_stats(self):
         # Display floats with two decimal places.
         pd.set_option('precision', 2)

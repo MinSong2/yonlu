@@ -33,7 +33,7 @@ from shutil import copyfile
 
 import unicodedata
 import six
-from docutils.io import unicode
+# from docutils.io import unicode
 
 from transformers import PreTrainedTokenizer
 
