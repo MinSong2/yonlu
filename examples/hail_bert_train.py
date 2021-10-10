@@ -13,7 +13,7 @@ OPT.testmode = False
 #mode is either en or kr
 mode = 'kr'
 df = None
-
+check_point = False
 
 if mode == 'en':
     df = pd.read_csv("../data/reviews.csv")
@@ -40,7 +40,7 @@ elif mode == 'kr':
 
     #below is just for a sample test
 
-    for doc in result[1:2000]:
+    for doc in result[1:]:
         document = ''
         for sent in doc:
             for word in sent:
@@ -60,8 +60,8 @@ torch.manual_seed(RANDOM_SEED)
 
 #we need a better way of setting MAX_LEN
 
-MAX_LEN = 256
-BATCH_SIZE = 16
+MAX_LEN = 160
+BATCH_SIZE = 20
 
 #split
 df_train, df_test = train_test_split(df, test_size=0.1, random_state=RANDOM_SEED)
@@ -98,19 +98,22 @@ elif classifier == 'attention':
     model = PYBERTClassifierGenAtten(len(class_names), bert_model_name, dr_rate=dr_rate)
 elif classifier == 'transformers':
     model = PYBertForSequenceClassification(len(class_names), bert_model_name).__call__()
+    if check_point:
+        model = torch.load('./model_save/best_model_state.bin')
+
 
 model = model.to(device)
 
 algorithm = 'transformers' #transformers or non_transformers
-torch_model_name = 'best_model_state_test.bin'
+torch_model_name = 'best_model_state_hail2.bin'
 
 #BERT authors suggests epoch from 2 to 4
-num_epochs = 1
+num_epochs = 3
 trainer = PYBERTTrainer()
 trainer.train(model, device, train_data_loader, val_data_loader,
               df_val, df_train, tokenizer, num_epochs=num_epochs, algorithm=algorithm, torch_model_name=torch_model_name)
 
-trainer._save_history(path='./checkpoint/', file_name='model_history_test.pkl')
+# trainer._save_history(path='./checkpoint/', file_name='model_history_hail.pkl')
 
 trainer.summanry_training_stats()
 

@@ -12,7 +12,7 @@ import seaborn as sns
 import os
 
 class PYBERTTrainer:
-    def __init__(self):
+    def __init__(self, num_class=2):
         print('training model with BERT')
 
         # We'll store a number of quantities such as training and validation loss,
@@ -20,6 +20,7 @@ class PYBERTTrainer:
         self.training_stats = []
 
         self.df_stats = []
+        self.num_classes = num_class
 
     def format_time(self, elapsed):
         '''
@@ -55,7 +56,7 @@ class PYBERTTrainer:
                                      attention_mask=attention_mask,
                                      labels=targets, return_dict=False)
 
-                pred = torch.argmax(F.softmax(logits), dim=1)
+                pred = torch.argmax(F.softmax(logits), dim=self.num_classes-1)
                 correct = pred.eq(targets)
 
                 label_ids = targets.to('cpu').numpy()
@@ -282,6 +283,7 @@ class PYBERTTrainer:
                 #torch.save(model.state_dict(), saved_training_model)
                 self._save(model,tokenizer, algorithm, torch_model_name)
                 best_accuracy = val_acc
+        self._save_history(path='./checkpoint/', file_name=torch_model_name[:-3]+'pkl')
 
 
     def _save(self, model, tokenizer, algorithm, torch_model_name='best_model_states.bin'):
@@ -313,7 +315,11 @@ class PYBERTTrainer:
         history['df_stats'] = self.df_stats
 
         import pickle
-        with open(path+file_name,'wb') as f:
+
+        if not os.path.exists(path):
+            os.makedirs(path)
+
+        with open(path+file_name, 'wb') as f:
             pickle.dump(history, f)
 
     def _load_history(self, path='./checkpoint/model_history.pkl'):
