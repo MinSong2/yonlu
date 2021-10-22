@@ -1,0 +1,4 @@
+Component-Whole(e1,e2)
+Other
+Component-Whole(e1,e2)
+Other

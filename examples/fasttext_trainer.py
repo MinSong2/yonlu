@@ -1,5 +1,5 @@
 
-from word_embeddings.word_embeddings import FastText
+from yonlu.word_embeddings.word_embeddings import FastText
 
 fasttext = FastText()
 mode = 'jamo_split_filtered'

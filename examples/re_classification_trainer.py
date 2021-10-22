@@ -1,8 +1,8 @@
 import argparse
 
-from data_utils.relation_dataset import load_and_cache_examples
-from relation_classification.relation_trainer import Trainer
-from data_utils.utils import init_logger, load_tokenizer, set_seed
+from yonlu.data_utils.relation_dataset import load_and_cache_examples
+from yonlu.relation_classification.relation_trainer import Trainer
+from yonlu.data_utils.utils import init_logger, load_tokenizer, set_seed
 
 
 def main(args):

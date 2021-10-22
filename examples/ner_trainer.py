@@ -1,5 +1,5 @@
 
-from ner.train_bert_crf import train
+from yonlu.ner.train_bert_crf import train
 
 if __name__ == '__main__':
     model_dir = '../experiments/base_model_with_crf'

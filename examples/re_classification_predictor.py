@@ -7,8 +7,8 @@ import torch
 from torch.utils.data import DataLoader, SequentialSampler, TensorDataset
 from tqdm import tqdm
 
-from relation_classification.relation_trainer import RBERT
-from data_utils.utils import get_label, init_logger, load_tokenizer
+from yonlu.relation_classification.relation_trainer import RBERT
+from yonlu.data_utils.utils import get_label, init_logger, load_tokenizer
 
 logger = logging.getLogger(__name__)
 

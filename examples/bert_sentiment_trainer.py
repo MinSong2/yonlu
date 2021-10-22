@@ -1,13 +1,13 @@
 from transformers import BertForSequenceClassification
 
-from bert.bert_dataset import PYBERTDataset
-from bert.bert_classification_model import PYBERTClassifier, PYBERTClassifierGenAtten, PYBertForSequenceClassification
-from bert.bert_trainer import PYBERTTrainer
-from bert.bert_util import create_data_loader, add_sentiment_label, convert_to_df, get_korean_tokenizer
+from yonlu.bert.bert_dataset import PYBERTDataset
+from yonlu.bert.bert_classification_model import PYBERTClassifier, PYBERTClassifierGenAtten, PYBertForSequenceClassification
+from yonlu.bert.bert_trainer import PYBERTTrainer
+from yonlu.bert.bert_util import create_data_loader, add_sentiment_label, convert_to_df, get_korean_tokenizer
 from transformers import BertModel, BertTokenizer
 from sklearn.model_selection import train_test_split
 
-from bert.tokenization_kobert import KoBertTokenizer
+from yonlu.bert.tokenization_kobert import KoBertTokenizer
 
 import treform as ptm
 import torch

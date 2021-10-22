@@ -1,4 +1,4 @@
-from word_embeddings.word_embeddings import FastText
+from yonlu.word_embeddings.word_embeddings import FastText
 
 fasttext = FastText()
 binary=True

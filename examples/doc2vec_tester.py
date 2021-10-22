@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    from word_embeddings.doc2vecModel import Doc2VecSimilarity
+    from yonlu.word_embeddings.doc2vecModel import Doc2VecSimilarity
     import logging
     import treform as ptm
 

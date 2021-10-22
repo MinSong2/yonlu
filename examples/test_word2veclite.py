@@ -1,5 +1,5 @@
 
-from word_embeddings.word2veclite import Word2Vec
+from yonlu.word_embeddings.word2veclite import Word2Vec
 
 corpus = "I like playing football with my friends"
 cbow = Word2Vec(method="cbow", corpus=corpus,

@@ -1,6 +1,6 @@
 
 from transformers import BertTokenizer, BertModel
-from bert.load_kobert_model import get_kobert_model
+from yonlu.bert.load_kobert_model import get_kobert_model
 
 # OPTIONAL: if you want to have more information on what's happening, activate the logger as follows
 import logging
@@ -36,7 +36,6 @@ def get_pretrained_model(pretrained_type):
     return tokenizer
 
 #tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
-
 tokenizer = get_pretrained_model('kobert')
 
 import treform as ptm
@@ -94,7 +93,6 @@ device = torch.device("cpu")
 #model = BertModel.from_pretrained('bert-base-multilingual-cased',output_hidden_states = True,)
 
 model = BertModel.from_pretrained('monologg/kobert', output_hidden_states = True,)
-
 #model = BertModel.from_pretrained('D:\\python_workspace\\pyTextMiner\\bert_models\\pytorch_model.bin',
 #                                  output_hidden_states = True,)
 

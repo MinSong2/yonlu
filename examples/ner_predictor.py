@@ -2,13 +2,13 @@ import json
 import pickle
 import torch
 from gluonnlp.data import SentencepieceTokenizer
-from model.net import KobertCRF
-from data_utils.utils import Config
-from data_utils.vocab_tokenizer import Tokenizer
-from data_utils.pad_sequence import keras_pad_fn
+from yonlu.model.net import KobertCRF
+from yonlu.data_utils.utils import Config
+from yonlu.data_utils.vocab_tokenizer import Tokenizer
+from yonlu.data_utils.pad_sequence import keras_pad_fn
 from pathlib import Path
 
-from ner.predict_bert_crf import DecoderFromNamedEntitySequence
+from yonlu.ner.predict_bert_crf import DecoderFromNamedEntitySequence
 
 
 def main():
@@ -33,7 +33,7 @@ def main():
 
     # load
     model_dict = model.state_dict()
-    checkpoint = torch.load("../experiments/base_model_with_crf/best-epoch-9-step-750-acc-0.959.bin", map_location=torch.device('cpu'))
+    checkpoint = torch.load("../experiments/base_model_with_crf/best-epoch-9-step-750-acc-0.960.bin", map_location=torch.device('cpu'))
 
     convert_keys = {}
     for k, v in checkpoint['model_state_dict'].items():

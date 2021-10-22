@@ -1,5 +1,5 @@
 
-from word_embeddings.word_embeddings import Word2Vec
+from yonlu.word_embeddings.word_embeddings import Word2Vec
 
 word2vec = Word2Vec()
 binary=True

@@ -1,5 +1,5 @@
 import torch
-from pytorch_pretrained_bert import BertTokenizer, BertModel, BertForMaskedLM
+from transformers import BertTokenizer, BertModel, BertForMaskedLM
 from sklearn.metrics.pairwise import cosine_similarity
 
 #pip install pytorch-pretrained-bert

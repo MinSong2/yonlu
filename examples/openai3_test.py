@@ -1,11 +1,11 @@
 import os
 import openai
 import glob
-from bert.gpt3 import GPT
-from bert.gpt3 import Example
+from yonlu.bert.gpt3 import GPT
+from yonlu.bert.gpt3 import Example
 
 
-openai.api_key = "YOUR_KEY"
+openai.api_key = "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"
 
 gpt = GPT(engine="davinci",
           temperature=0.5,

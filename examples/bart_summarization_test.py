@@ -1,6 +1,6 @@
 import datetime
 import argparse
-import bert.bart_summarizer as summerizer
+import yonlu.bert.bart_summarizer as summerizer
 import logging
 
 logger = logging.getLogger(__name__)

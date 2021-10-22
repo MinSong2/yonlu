@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 if __name__ == '__main__':
-    from word_embeddings.doc2vecModel import Doc2VecTrainer
+    from yonlu.word_embeddings.doc2vecModel import Doc2VecTrainer
     import logging
     import treform as ptm
     from gensim.models.doc2vec import TaggedDocument

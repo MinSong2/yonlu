@@ -1,5 +1,5 @@
 import treform as ptm
-from word_embeddings.node2vecModel import Node2VecModel
+from yonlu.word_embeddings.node2vecModel import Node2VecModel
 
 embedding_filename='./node2vec.emb'
 n2vec = Node2VecModel()

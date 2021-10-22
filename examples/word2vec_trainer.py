@@ -1,5 +1,5 @@
 
-from word_embeddings.word_embeddings import Word2Vec
+from yonlu.word_embeddings.word_embeddings import Word2Vec
 
 word2vec = Word2Vec()
 mode = 'simple'
@@ -14,12 +14,12 @@ word2vec.preprocessing(mode,mecab_path,stopword_file,files,is_directory,doc_inde
 
 min_count=1
 window=5
-size=50
+size=200
 negative=5
 word2vec.train(min_count, window, size, negative)
 
-model_file = 'word2vec.bin'
-binary=True;
+model_file = 'word2vec.txt'
+binary=False;
 word2vec.save_model(model_file, binary)
 
 

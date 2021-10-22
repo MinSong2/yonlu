@@ -3,7 +3,7 @@ from collections import namedtuple
 from sklearn.cluster import KMeans
 
 import numpy as np
-from word_embeddings.doc2vecModel import Doc2VecTrainer, Doc2VecSimilarity
+from yonlu.word_embeddings.doc2vecModel import Doc2VecTrainer, Doc2VecSimilarity
 import logging
 import treform as ptm
 import csv

@@ -2,7 +2,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 import treform as ptm
 import re
-from word_embeddings.node2vecModel import Node2VecModel
+from yonlu.word_embeddings.node2vecModel import Node2VecModel
 
 mecab_path = 'C:\\mecab\\mecab-ko-dic'
 stopword_file = '../stopwords/stopwordsKor.txt'
