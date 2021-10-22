@@ -4,7 +4,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 from torch.nn import CrossEntropyLoss
-from data_utils.utils import clones
+from yonlu.data_utils.utils import clones
 from transformers.activations import get_activation
 
 """

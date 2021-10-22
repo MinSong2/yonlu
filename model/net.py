@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import torch
 from torch import nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
-from kobert.pytorch_kobert import get_pytorch_kobert_model
+from yonlu.kobert.pytorch_kobert import get_pytorch_kobert_model
 from transformers import BertModel, BertConfig
 # from pytorch_pretrained_bert import BertModel, BertConfig
 from torchcrf import CRF

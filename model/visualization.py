@@ -2,8 +2,8 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 from torch.autograd import Variable
-from model.transformer import PositionalEncoding
-from data_utils.utils import subsequent_mask
+from yonlu.model.transformer import PositionalEncoding
+from yonlu.data_utils.utils import subsequent_mask
 
 def visualize_subsequent_mask():
   plt.figure(figsize=(5, 5))
