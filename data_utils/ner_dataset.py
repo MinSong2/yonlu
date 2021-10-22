@@ -121,10 +121,10 @@ class NamedEntityRecognitionDataset(Dataset):
 
 
 from gluonnlp.data import SentencepieceTokenizer, SentencepieceDetokenizer
-from kobert.pytorch_kobert import get_pytorch_kobert_model
-from kobert.utils import get_tokenizer
-from data_utils.vocab_tokenizer import Vocabulary, Tokenizer
-from data_utils.pad_sequence import keras_pad_fn
+from yonlu.kobert.pytorch_kobert import get_pytorch_kobert_model
+from yonlu.kobert.utils import get_tokenizer
+from yonlu.data_utils.vocab_tokenizer import Vocabulary, Tokenizer
+from yonlu.data_utils.pad_sequence import keras_pad_fn
 
 class NamedEntityRecognitionFormatter():
     """ NER formatter class """

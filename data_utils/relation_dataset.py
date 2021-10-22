@@ -7,7 +7,7 @@ import os
 import torch
 from torch.utils.data import TensorDataset
 
-from data_utils.utils import get_label
+from yonlu.data_utils.utils import get_label
 
 logger = logging.getLogger(__name__)
 
