@@ -8,8 +8,8 @@ from sklearn.metrics import matthews_corrcoef
 import numpy as np
 import torch.nn.functional as F
 
-from bert.bert_classification_model import PYBERTClassifier
-from bert.bert_dataset import PYBERTDataset
+from yonlu.bert.bert_classification_model import PYBERTClassifier
+from yonlu.bert.bert_dataset import PYBERTDataset
 
 
 class bert_predictor:

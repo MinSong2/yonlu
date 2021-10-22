@@ -134,7 +134,9 @@ class Decoder(nn.Module):
 
 class DecoderLayer(nn.Module):
     ''''
-    In addition to the two sub-layers in each encoder layer, the decoder inserts a third sub-layer, which performs multi-head attention over the output of the encoder stack. Similar to the encoder, we employ residual connections around each of the sub-layers, followed by layer normalization.
+    In addition to the two sub-layers in each encoder layer,
+    the decoder inserts a third sub-layer, which performs multi-head attention over the output of the encoder stack.
+    Similar to the encoder, we employ residual connections around each of the sub-layers, followed by layer normalization.
 
     Decoder is made of self-attn, src-attn, and feed forward (defined below)
 
@@ -162,7 +164,8 @@ def subsequent_mask(size):
     return torch.from_numpy(subsequent_mask) == 0
 
 ''''
-Below the attention mask shows the position each tgt word (row) is allowed to look at (column). Words are blocked for attending to future words during training.
+Below the attention mask shows the position each tgt word (row) is allowed to look at (column). 
+Words are blocked for attending to future words during training.
 '''
 plt.figure(figsize=(5,5))
 plt.imshow(subsequent_mask(20)[0])
@@ -173,7 +176,10 @@ im = Image.open('../images/ModalNet-19.png')
 im.show()
 
 ''''
-An attention function can be described as mapping a query and a set of key-value pairs to an output, where the query, keys, values, and output are all vectors. The output is computed as a weighted sum of the values, where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.
+An attention function can be described as mapping a query and a set of key-value pairs to an output, 
+where the query, keys, values, and output are all vectors. 
+The output is computed as a weighted sum of the values, 
+where the weight assigned to each value is computed by a compatibility function of the query with the corresponding key.
 
 We call our particular attention “Scaled Dot-Product Attention”. The input consists of queries and keys of dimension 
 dk, and values of dimension dv. We compute the dot products of the query with all keys, divide each by 
@@ -233,14 +239,10 @@ class MultiHeadedAttention(nn.Module):
 
 '''
 Applications of Attention in our Model
-The Transformer uses multi-head attention in three different ways: 1) In “encoder-decoder attention” layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every position in the decoder to attend over all positions in the input sequence. This mimics the typical encoder-decoder attention mechanisms in sequence-to-sequence models such as (cite).
-
+The Transformer uses multi-head attention in three different ways: 
+1) In “encoder-decoder attention” layers, the queries come from the previous decoder layer, and the memory keys and values come from the output of the encoder. This allows every position in the decoder to attend over all positions in the input sequence. This mimics the typical encoder-decoder attention mechanisms in sequence-to-sequence models such as (cite).
 2) The encoder contains self-attention layers. In a self-attention layer all of the keys, values and queries come from the same place, in this case, the output of the previous layer in the encoder. Each position in the encoder can attend to all positions in the previous layer of the encoder.
-
-3) Similarly, self-attention layers in the decoder allow each position in the decoder to attend to all positions in the decoder up to and including that position. We need to prevent leftward information flow in the decoder to preserve the auto-regressive property. We implement this inside of scaled dot- product attention by masking out (setting to 
-−
-∞
-) all values in the input of the softmax which correspond to illegal connections.
+3) Similarly, self-attention layers in the decoder allow each position in the decoder to attend to all positions in the decoder up to and including that position. We need to prevent leftward information flow in the decoder to preserve the auto-regressive property. We implement this inside of scaled dot- product attention by masking out all values in the input of the softmax which correspond to illegal connections.
 '''
 
 class PositionwiseFeedForward(nn.Module):

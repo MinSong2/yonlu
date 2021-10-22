@@ -1,10 +1,10 @@
 
 from torch.utils.data import Dataset, DataLoader
-from bert.bert_dataset import PYBERTDataset
+from yonlu.bert.bert_dataset import PYBERTDataset
 import pandas as pd
 from transformers import BertModel, BertTokenizer
-from bert.tokenization_kobert import KoBertTokenizer
-from bert.tokenization_hanbert import HanBertTokenizer
+from yonlu.bert.tokenization_kobert import KoBertTokenizer
+from yonlu.bert.tokenization_hanbert import HanBertTokenizer
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
