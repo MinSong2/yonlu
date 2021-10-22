@@ -22,7 +22,7 @@ class WordEmbeddings:
         if mode == 'unfiltered':
             # path = '/usr/local/lib/mecab/dic/mecab-ko-dic'
             pipeline = ptm.Pipeline(ptm.splitter.KoSentSplitter(),
-                                    ptm.tokenizer.MeCab(path),
+                                    ptm.tokenizer.Komoran(),
                                     ptm.lemmatizer.SejongPOSLemmatizer(),
                                     ptm.helper.SelectWordOnly(),
                                     ptm.helper.StopwordFilter(file=stopword_file))
@@ -95,7 +95,7 @@ class WordEmbeddings:
         elif mode == 'jamo_split_unfiltered':
             # documents = LineSentence(datapath('/Data/ko_sns_comments/naver_comments15_16_filtered.txt'))
             pipeline = ptm.Pipeline(ptm.splitter.KoSentSplitter(),
-                                    ptm.tokenizer.MeCab(path),
+                                    ptm.tokenizer.Komoran(),
                                     ptm.lemmatizer.SejongPOSLemmatizer(),
                                     ptm.helper.SelectWordOnly(),
                                     ptm.helper.StopwordFilter(file=stopword_file))
@@ -203,6 +203,7 @@ class WordEmbeddings:
         print('default train function')
         self.model = gensim.models.Word2Vec(min_count=min_count,
                                             window=window,
+                                            vector_size=size,
                                             sample=6e-5,
                                             alpha=0.03,
                                             min_alpha=0.0007,
@@ -263,7 +264,7 @@ class FastText(WordEmbeddings):
 
     def train(self, min_count=5, window=5, size=300, negative=20, sg=0, min_n=2, max_n=6):
         print('min ' + str(min_count))
-        self.model = gensim.models.FastText(self.documents, window=window,
+        self.model = gensim.models.FastText(self.documents, window=window, vector_size=size,
                                             negative=negative, min_count=min_count,
                                             sg=sg, min_n=min_n, max_n=max_n,
                                             workers=10)
