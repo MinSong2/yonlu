@@ -7,6 +7,7 @@ import pickle
 import json
 import os
 from pathlib import Path
+import torch.nn.functional as F
 
 import torch
 from pytorch_transformers import AdamW, WarmupLinearSchedule
@@ -15,7 +16,7 @@ from torch.utils.data import DataLoader
 from torch import nn, optim
 from tqdm import tqdm, trange
 from yonlu.data_utils.utils import CheckpointManager, SummaryManager
-from yonlu.model.net import KobertCRF
+from yonlu.model.net import KobertCRF, KobertSequenceFeatureExtractor, KobertBiLSTMCRF, KobertBiGRUCRF
 from yonlu.data_utils.utils import Config
 
 from yonlu.data_utils.ner_dataset import NamedEntityRecognitionDataset, NamedEntityRecognitionFormatter
@@ -177,6 +178,11 @@ def plot_confusion_matrix(y_true, y_pred, classes, labels,
     fig.tight_layout()
     return ax
 
+def clf_acc(yhat, y, pad_id=0):
+    with torch.no_grad():
+        yhat = yhat.max(dim=-1)[1] # [0]: max value, [1]: index of max value
+        acc = (yhat == y).float()[y != pad_id].mean() # padding은 acc에서 제거
+    return acc
 
 def train(model_dir, train_data_dir, val_data_dir):
     # Config
@@ -221,7 +227,16 @@ def train(model_dir, train_data_dir, val_data_dir):
     val_dl = DataLoader(val_ds, batch_size=model_config.batch_size, shuffle=True, num_workers=4, drop_last=False)
 
     # Model
-    model = KobertCRF(config=model_config, num_classes=len(tr_ds.ner_to_index))
+    mode = 'bert_only'
+    if mode == 'bert_only':
+        model = KobertSequenceFeatureExtractor(config=model_config, num_classes=len(tr_ds.ner_to_index))
+    elif mode == 'bert_crf':
+        model = KobertCRF(config=model_config, num_classes=len(tr_ds.ner_to_index))
+    elif mode == 'bert_bilstm_crf':
+        model = KobertBiLSTMCRF(config=model_config, num_classes=len(tr_ds.ner_to_index))
+    elif mode == 'bert_bigru_crf':
+        model = KobertBiGRUCRF(config=model_config, num_classes=len(tr_ds.ner_to_index))
+
     model.to(device)
     model.train()
 
@@ -265,6 +280,9 @@ def train(model_dir, train_data_dir, val_data_dir):
     model.zero_grad()
     set_seed()  # Added here for reproductibility (even between python 2 and 3)
 
+    # loss
+    loss_fn = nn.CrossEntropyLoss(ignore_index=vocab.PAD_ID)
+
     # Train
     train_iterator = trange(int(model_config.epochs), desc="Epoch")
     for _epoch, _ in enumerate(train_iterator):
@@ -273,10 +291,19 @@ def train(model_dir, train_data_dir, val_data_dir):
         for step, batch in enumerate(epoch_iterator):
             model.train()
             x_input, token_type_ids, y_real = map(lambda elm: elm.to(device), batch)
-            log_likelihood, sequence_of_tags = model(x_input, token_type_ids, y_real)
+            if mode == 'bert_only':
+                logits = model(x_input, token_type_ids, y_real)
+                # loss 계산을 위해 shape 변경
+                logits = logits.reshape(-1, logits.size(-1))
+                y_real = y_real.view(-1).long()
 
-            # loss: negative log-likelihood
-            loss = -1 * log_likelihood
+                # padding index를 선언할때 줬으니 자동으로 padding에 대한 loss는 계산 안할수도?!
+                loss = loss_fn(logits, y_real)  # Input: (N, C) Target: (N)
+
+            else:
+                log_likelihood, sequence_of_tags = model(x_input, token_type_ids, y_real)
+                # loss: negative log-likelihood
+                loss = -1 * log_likelihood
 
             if n_gpu > 1:
                 loss = loss.mean()  # mean() to average on multi-gpu parallel training
@@ -294,8 +321,11 @@ def train(model_dir, train_data_dir, val_data_dir):
                 global_step += 1
 
                 with torch.no_grad():
-                    sequence_of_tags = torch.tensor(sequence_of_tags).to(device)
-                    mb_acc = (sequence_of_tags == y_real).float()[y_real != vocab.PAD_ID].mean()
+                    if mode != 'bert_only':
+                        sequence_of_tags = torch.tensor(sequence_of_tags).to(device)
+                        mb_acc = (sequence_of_tags == y_real).float()[y_real != vocab.PAD_ID].mean()
+                    else:
+                        mb_acc = clf_acc(logits, y_real, pad_id = vocab.PAD_ID)
 
                 tr_acc = mb_acc.item()
                 tr_loss_avg = tr_loss / global_step
