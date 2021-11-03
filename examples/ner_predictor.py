@@ -12,7 +12,17 @@ from yonlu.ner.predict_bert_crf import DecoderFromNamedEntitySequence
 
 
 def main():
-    model_dir = Path('../experiments/base_model_with_crf')
+    mode = 'bert_only'
+    if mode == 'bert_only':
+        model_dir = '../experiments/base_model'
+    elif mode == 'bert_crf':
+        model_dir = '../experiments/base_model_with_crf'
+    elif mode == 'bert_bilstm_crf':
+        model_dir = '../experiments/base_model_with_bilstm_crf'
+    elif mode == 'bert_bigru_crf':
+        model_dir = '../experiments/base_model_with_bigru_crf'
+
+    model_dir = Path(model_dir)
     model_config = Config(json_path=str(model_dir) + '/config.json')
 
     # load vocab & tokenizer
