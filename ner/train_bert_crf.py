@@ -45,7 +45,17 @@ def set_seed(seed=100):
     if n_gpu > 0:
         torch.cuda.manual_seed_all(seed)
 
-def evaluate(model, val_dl, prefix="NER"):
+
+def clf_acc(yhat, y, pad_id=0):
+    with torch.no_grad():
+        yhat = yhat.max(dim=-1)[1] # [0]: max value, [1]: index of max value
+        acc = (yhat == y).float()[y != pad_id].mean() # padding은 acc에서 제거
+    return acc
+
+
+def evaluate(model, val_dl, pad_id, mode='bert_only', prefix="NER"):
+    pad_token_label_id = torch.nn.CrossEntropyLoss().ignore_index
+
     """ evaluate accuracy and return result """
     results = {}
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -60,6 +70,9 @@ def evaluate(model, val_dl, prefix="NER"):
     count_correct = 0
     total_count = 0
 
+    # loss
+    loss_fn = nn.CrossEntropyLoss(ignore_index=pad_id)
+
     for batch in tqdm(val_dl, desc="Evaluating"):
         model.train()
         x_input, token_type_ids, y_real = map(lambda elm: elm.to(device), batch)
@@ -67,26 +80,50 @@ def evaluate(model, val_dl, prefix="NER"):
             inputs = {'input_ids': x_input,
                       'token_type_ids': token_type_ids,
                       'tags': y_real}
-            log_likelihood, sequence_of_tags = model(**inputs)
+            if mode == 'bert_only':
+                outputs = model(**inputs)
 
-            eval_loss += -1 * log_likelihood.float().item()
+                # loss 계산을 위해 shape 변경
+                logits = outputs.reshape(-1, outputs.size(-1))
+                y_real = y_real.view(-1).long()
+
+                sequence_of_tags = torch.tensor(logits).to('cpu')
+
+                eval_loss = loss_fn(logits, y_real)  # Input: (N, C) Target: (N)
+                eval_loss = eval_loss.float().item()
+            else:
+                log_likelihood, sequence_of_tags = model(**inputs)
+                eval_loss += -1 * log_likelihood.float().item()
+
         nb_eval_steps += 1
 
         y_real = y_real.to('cpu')
-        sequence_of_tags = torch.tensor(sequence_of_tags).to('cpu')
-        count_correct += (sequence_of_tags == y_real).float()[y_real != 2].sum()  # 0,1,2,3 -> [CLS], [SEP], [PAD], [MASK] index
-        total_count += len(y_real[y_real != 2])
 
-        for seq_elm in y_real.tolist():
-            list_of_y_real += seq_elm
+        if mode != 'bert_only':
+            sequence_of_tags = torch.tensor(sequence_of_tags).to('cpu')
+            count_correct += (sequence_of_tags == y_real).float()[y_real != 2].sum()  # 0,1,2,3 -> [CLS], [SEP], [PAD], [MASK] index
+            total_count += len(y_real[y_real != 2])
+            for seq_elm in sequence_of_tags.tolist():
+                list_of_pred_tags += seq_elm
 
-        for seq_elm in sequence_of_tags.tolist():
-            list_of_pred_tags += seq_elm
+            for seq_elm in y_real.tolist():
+                list_of_y_real += seq_elm
+        else:
+            for seq_elm in sequence_of_tags.tolist():
+                list_of_pred_tags += seq_elm
 
-    eval_loss = eval_loss / nb_eval_steps
-    acc = (count_correct / total_count).item()  # tensor -> float
-    result = {"eval_acc": acc, "eval_loss": eval_loss}
-    results.update(result)
+            for seq_elm in y_real.tolist():
+                list_of_y_real += [seq_elm]
+
+        eval_loss = eval_loss / nb_eval_steps
+        if mode != 'bert_only':
+            acc = (count_correct / total_count).item()  # tensor -> float
+        else:
+            acc = clf_acc(logits, y_real, pad_id=pad_id)
+            acc = acc.float().item()
+
+        result = {"eval_acc": acc, "eval_loss": eval_loss}
+        results.update(result)
 
     return results, list_of_y_real, list_of_pred_tags
 
@@ -178,15 +215,14 @@ def plot_confusion_matrix(y_true, y_pred, classes, labels,
     fig.tight_layout()
     return ax
 
-def clf_acc(yhat, y, pad_id=0):
-    with torch.no_grad():
-        yhat = yhat.max(dim=-1)[1] # [0]: max value, [1]: index of max value
-        acc = (yhat == y).float()[y != pad_id].mean() # padding은 acc에서 제거
-    return acc
 
 def train(model_dir, train_data_dir, val_data_dir):
     # Config
     model_config = Config(json_path=str(model_dir + '/config.json'))
+
+    with open(str(model_dir) + "/ner_to_index.json", 'rb') as f:
+        ner_to_index = json.load(f)
+        label_list = list(ner_to_index.keys())
 
     # Vocab & Tokenizer
     tok_path = get_tokenizer() # ./tokenizer_78b3253a26.model
@@ -214,9 +250,6 @@ def train(model_dir, train_data_dir, val_data_dir):
     ner_formatter = NamedEntityRecognitionFormatter(vocab=vocab, tokenizer=tokenizer, maxlen=model_config.maxlen, model_dir=model_dir)
 
     # Train & Val Datasets
-    #cwd = Path.cwd()
-    #data_in = data_dir
-    #train_data_dir = data_in + "/NER-master" + "/말뭉치 - 형태소_개체명"
     tr_ds = NamedEntityRecognitionDataset(train_data_dir=train_data_dir, model_dir=model_dir)
     tr_ds.set_transform_fn(transform_source_fn=ner_formatter.transform_source_fn, transform_target_fn=ner_formatter.transform_target_fn)
     tr_dl = DataLoader(tr_ds, batch_size=model_config.batch_size, shuffle=True, num_workers=4, drop_last=False)
@@ -293,13 +326,11 @@ def train(model_dir, train_data_dir, val_data_dir):
             x_input, token_type_ids, y_real = map(lambda elm: elm.to(device), batch)
             if mode == 'bert_only':
                 logits = model(x_input, token_type_ids, y_real)
-                # loss 계산을 위해 shape 변경
                 logits = logits.reshape(-1, logits.size(-1))
                 y_real = y_real.view(-1).long()
 
-                # padding index를 선언할때 줬으니 자동으로 padding에 대한 loss는 계산 안할수도?!
                 loss = loss_fn(logits, y_real)  # Input: (N, C) Target: (N)
-
+                sequence_of_tags = torch.tensor(logits).to(device)
             else:
                 log_likelihood, sequence_of_tags = model(x_input, token_type_ids, y_real)
                 # loss: negative log-likelihood
@@ -337,7 +368,7 @@ def train(model_dir, train_data_dir, val_data_dir):
                 # training & evaluation log
                 if model_config.logging_steps > 0 and global_step % model_config.logging_steps == 0:
                     if model_config.evaluate_during_training:  # Only evaluate when single GPU otherwise metrics may not average well
-                        eval_summary, list_of_y_real, list_of_pred_tags = evaluate(model, val_dl)
+                        eval_summary, list_of_y_real, list_of_pred_tags = evaluate(model, val_dl, vocab.PAD_ID, mode)
                         tb_writer.add_scalar('lr', scheduler.get_lr()[0], global_step)
                         tb_writer.add_scalars('loss', {'train': (tr_loss - logging_loss) / model_config.logging_steps, 'val': eval_summary["eval_loss"]}, global_step)
                         tb_writer.add_scalars('acc', {'train': tr_acc, 'val': eval_summary["eval_acc"]}, global_step)
@@ -347,7 +378,7 @@ def train(model_dir, train_data_dir, val_data_dir):
 
                 # save model
                 if model_config.save_steps > 0 and global_step % model_config.save_steps == 0:
-                    eval_summary, list_of_y_real, list_of_pred_tags = evaluate(model, val_dl)
+                    eval_summary, list_of_y_real, list_of_pred_tags = evaluate(model, val_dl, vocab.PAD_ID, mode)
 
                     # Save model checkpoint
                     output_dir = os.path.join(model_config.output_dir, 'epoch-{}'.format(epoch + 1))
@@ -368,19 +399,14 @@ def train(model_dir, train_data_dir, val_data_dir):
                         best_dev_acc = eval_summary["eval_acc"]
                         best_dev_loss = eval_summary["eval_loss"]
                         best_steps = global_step
-                        # if args.do_test:
-                        # results_test = evaluate(model, test_dl, test=True)
-                        # for key, value in results_test.items():
-                        #     tb_writer.add_scalar('test_{}'.format(key), value, global_step)
-                        # logger.info("test acc: %s, loss: %s, global steps: %s", str(eval_summary['eval_acc']), str(eval_summary['eval_loss']), str(global_step))
 
                         checkpoint_manager.save_checkpoint(state, 'best-epoch-{}-step-{}-acc-{:.3f}.bin'.format(epoch + 1, global_step, best_dev_acc))
                         print("Saving model checkpoint as best-epoch-{}-step-{}-acc-{:.3f}.bin".format(epoch + 1, global_step, best_dev_acc))
 
                         # print classification report and save confusion matrix
-                        cr_save_path = model_dir + '/best-epoch-{}-step-{}-acc-{:.3f}-cr.csv'.format(epoch + 1, global_step, best_dev_acc)
-                        cm_save_path = model_dir + '/best-epoch-{}-step-{}-acc-{:.3f}-cm.png'.format(epoch + 1, global_step, best_dev_acc)
-                        save_cr_and_cm(val_dl, list_of_y_real, list_of_pred_tags, cr_save_path=cr_save_path, cm_save_path=cm_save_path)
+                        #cr_save_path = model_dir + '/best-epoch-{}-step-{}-acc-{:.3f}-cr.csv'.format(epoch + 1, global_step, best_dev_acc)
+                        #cm_save_path = model_dir + '/best-epoch-{}-step-{}-acc-{:.3f}-cm.png'.format(epoch + 1, global_step, best_dev_acc)
+                        #save_cr_and_cm(val_dl, list_of_y_real, list_of_pred_tags, cr_save_path=cr_save_path, cm_save_path=cm_save_path)
                     else:
                         torch.save(state, os.path.join(output_dir, 'model-epoch-{}-step-{}-acc-{:.3f}.bin'.format(epoch + 1, global_step, eval_summary["eval_acc"])))
                         print("Saving model checkpoint as model-epoch-{}-step-{}-acc-{:.3f}.bin".format(epoch + 1, global_step, eval_summary["eval_acc"]))
