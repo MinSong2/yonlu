@@ -4,6 +4,7 @@ import fire
 
 from yonlu.convAI.bert_mini_chatbot import Config
 from yonlu.convAI.export_question_embeddings import export_question_embeddings
+from os.path import exists
 
 EXIT = "대화종료"
 
@@ -15,7 +16,8 @@ if __name__ == "__main__":
     config = Config(chatbot_data=chatbotData, para_kqc_data=paraKQCData,
                     questions=questions, bert_multilingual=BERTMultiLingual)
 
-    fire.Fire({"run": export_question_embeddings(config)})
+    if exists(questions) != True:
+        fire.Fire({"run": export_question_embeddings(config)})
 
     print('*' * 150)
     print('환영합니다! 간단한 챗봇을 사용해보세요')
