@@ -1,6 +1,10 @@
 
 from yonlu.word_embeddings.word_embeddings import Word2Vec
 
+#
+import nltk
+nltk.download('punkt')
+
 word2vec = Word2Vec()
 mode = 'unfiltered'
 mecab_path = 'C:\\mecab\\mecab-ko-dic'
@@ -19,8 +23,8 @@ size=200
 negative=0
 word2vec.train(min_count, window, size, negative)
 
-model_file = 'word2vec_1.bin'
-binary=True;
+model_file = "word2vec.bin"
+binary=True
 word2vec.save_model(model_file, binary)
 
 
