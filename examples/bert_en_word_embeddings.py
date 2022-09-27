@@ -22,46 +22,53 @@ print (marked_text)
 tokenized_text = tokenizer.tokenize(marked_text)
 print (tokenized_text)
 
-list(tokenizer.vocab.keys())[5000:5020]
+print(list(tokenizer.vocab.keys())[5000:5020])
 
 indexed_tokens = tokenizer.convert_tokens_to_ids(tokenized_text)
 
 for tup in zip(tokenized_text, indexed_tokens):
-  print (tup)
+  print(tup)
 
 segments_ids = [1] * len(tokenized_text)
-print (segments_ids)
+print(segments_ids)
 
 # Convert inputs to PyTorch tensors
 tokens_tensor = torch.tensor([indexed_tokens])
 segments_tensors = torch.tensor([segments_ids])
 
+device = torch.device("cpu")
+
 # Load pre-trained model (weights)
-model = BertModel.from_pretrained('bert-base-uncased')
+model = BertModel.from_pretrained('bert-base-uncased',
+                                  output_hidden_states = True, # Whether the model returns all hidden-states.
+                                  )
+model.to(device)
 
 # Put the model in "evaluation" mode, meaning feed-forward operation.
 model.eval()
 
 # Predict hidden states features for each layer
 with torch.no_grad():
-    encoded_layers, _ = model(tokens_tensor, segments_tensors)
+    encoded_layers = model(tokens_tensor, segments_tensors)
+    hidden_states = encoded_layers[2]
 
-print ("Number of layers:", len(encoded_layers))
+
+print ("Number of layers:", len(hidden_states), "  (initial embeddings + 12 BERT layers)")
 layer_i = 0
 
-print ("Number of batches:", len(encoded_layers[layer_i]))
+print ("Number of batches:", len(hidden_states[layer_i]))
 batch_i = 0
 
-print ("Number of tokens:", len(encoded_layers[layer_i][batch_i]))
+print ("Number of tokens:", len(hidden_states[layer_i][batch_i]))
 token_i = 0
 
-print ("Number of hidden units:", len(encoded_layers[layer_i][batch_i][token_i]))
-
+print ("Number of hidden units:", len(hidden_states[layer_i][batch_i][token_i]))
 
 # For the 5th token in our sentence, select its feature values from layer 5.
 token_i = 5
 layer_i = 5
-vec = encoded_layers[layer_i][batch_i][token_i]
+vec = hidden_states[layer_i][batch_i][token_i]
+
 
 # Plot the values as a histogram to show their distribution.
 plt.figure(figsize=(10,10))
@@ -69,63 +76,60 @@ plt.hist(vec, bins=200)
 plt.show()
 
 # Convert the hidden state embeddings into single token vectors
+#Let’s combine the layers to make this one whole big tensor.
+# Concatenate the tensors for all layers. We use `stack` here to
+# create a new dimension in the tensor.
+token_embeddings = torch.stack(hidden_states, dim=0)
+print(str(token_embeddings.size()))
 
-# Holds the list of 12 layer embeddings for each token
-# Will have the shape: [# tokens, # layers, # features]
-token_embeddings = []
+#Let’s get rid of the “batches” dimension since we don’t need it.
+# Remove dimension 1, the "batches".
+token_embeddings = torch.squeeze(token_embeddings, dim=1)
+print(str(token_embeddings.size()))
+
+#Finally, we can switch around the “layers” and “tokens” dimensions with permute.
+# Swap dimensions 0 and 1.
+token_embeddings = token_embeddings.permute(1,0,2)
+print(str(token_embeddings.size()))
+
+# Stores the token vectors, with shape [22 x 768]
+token_vecs_sum = []
+
+# `token_embeddings` is a [22 x 12 x 768] tensor.
 
 # For each token in the sentence...
-for token_i in range(len(tokenized_text)):
+for token in token_embeddings:
+    # `token` is a [12 x 768] tensor
 
-    # Holds 12 layers of hidden states for each token
-    hidden_layers = []
+    # Sum the vectors from the last four layers.
+    sum_vec = torch.sum(token[-4:], dim=0)
 
-    # For each of the 12 layers...
-    for layer_i in range(len(encoded_layers)):
-        # Lookup the vector for `token_i` in `layer_i`
-        vec = encoded_layers[layer_i][batch_i][token_i]
+    # Use `sum_vec` to represent `token`.
+    token_vecs_sum.append(sum_vec)
 
-        hidden_layers.append(vec)
+print('Shape is: %d x %d' % (len(token_vecs_sum), len(token_vecs_sum[0])))
 
-    token_embeddings.append(hidden_layers)
+for i, token_str in enumerate(tokenized_text):
+  print (i, token_str)
 
 print('------------------------------------------------------------')
 
-# Sanity check the dimensions:
-print("Number of tokens in sequence:", len(token_embeddings))
-print("Number of layers per token:", len(token_embeddings[0]))
-
-concatenated_last_4_layers = [torch.cat((layer[-1], layer[-2], layer[-3], layer[-4]), 0) for layer in token_embeddings] # [number_of_tokens, 3072]
-
-summed_last_4_layers = [torch.sum(torch.stack(layer)[-4:], 0) for layer in token_embeddings] # [number_of_tokens, 768]
-
-sentence_embedding = torch.mean(encoded_layers[11], 1)
-
-print ("Our final sentence embedding vector of shape:"), sentence_embedding[0].shape[0]
-
-print (text)
-for i,x in enumerate(tokenized_text):
-  print (i,x)
-
-print ("First fifteen values of 'bank' as in 'bank robber':")
-print (summed_last_4_layers[10][:15])
-
-print ("First fifteen values of 'bank' as in 'bank vault':")
-print(summed_last_4_layers[6][:15])
-
-print ("First fifteen values of 'bank' as in 'river bank':")
-print(summed_last_4_layers[19][:15])
-
-# Compare "bank" as in "bank robber" to "bank" as in "river bank"
-different_bank = cosine_similarity(summed_last_4_layers[10].reshape(1,-1), summed_last_4_layers[19].reshape(1,-1))[0][0]
-
-# Compare "bank" as in "bank robber" to "bank" as in "bank vault"
-same_bank = cosine_similarity(summed_last_4_layers[10].reshape(1,-1), summed_last_4_layers[6].reshape(1,-1))[0][0]
-
-print ("Similarity of 'bank' as in 'bank robber' to 'bank' as in 'bank vault':",  same_bank)
-
-print ("Similarity of 'bank' as in 'bank robber' to 'bank' as in 'river bank':",  different_bank)
+print('First 5 vector values for each instance of "bank".')
+print('')
+print("bank vault   ", str(token_vecs_sum[6][:5]))
+print("bank robber  ", str(token_vecs_sum[10][:5]))
+print("river bank   ", str(token_vecs_sum[19][:5]))
 
 
+from scipy.spatial.distance import cosine
 
+# Calculate the cosine similarity between the word bank
+# in "bank robber" vs "river bank" (different meanings).
+diff_bank = 1 - cosine(token_vecs_sum[10], token_vecs_sum[19])
 
+# Calculate the cosine similarity between the word bank
+# in "bank robber" vs "bank vault" (same meaning).
+same_bank = 1 - cosine(token_vecs_sum[10], token_vecs_sum[6])
+
+print('Vector similarity for  *similar*  meanings:  %.2f' % same_bank)
+print('Vector similarity for *different* meanings:  %.2f' % diff_bank)

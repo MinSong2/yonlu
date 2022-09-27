@@ -15,6 +15,7 @@ import torch
 #https://github.com/google-research/bert/blob/master/multilingual.md
 
 def get_pretrained_model(pretrained_type):
+    tokenizer = None
     if pretrained_type == 'etri':
         # use etri tokenizer
         print('not supported')
@@ -28,8 +29,8 @@ def get_pretrained_model(pretrained_type):
             path=tokenizer_path, vocab=vocab, lower=False)
         vocab = tokenizer.vocab.token_to_idx
     elif pretrained_type == 'kobert':
-        from bert.tokenization_kobert import KoBertTokenizer
-        tokenizer = KoBertTokenizer.from_pretrained('monologg/kobert')
+        from kobert_transformers import get_tokenizer
+        tokenizer = get_tokenizer()
 
     else:
         TypeError('Invalid pretrained model type')
