@@ -8,7 +8,7 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader, SequentialSampler
 from transformers import AutoModelForTokenClassification
 
-from ner_utils import init_logger, load_tokenizer, get_labels
+from yonlu.ner.ner_utils import init_logger, load_tokenizer, get_labels
 
 logger = logging.getLogger(__name__)
 
