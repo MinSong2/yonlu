@@ -1,0 +1,34 @@
+{
+   "data": {
+      "path": "D:\\download\\data\\",
+      "processed_path": "documents_nhs.jsonl"
+   },
+   "embeddings": {
+      "model": "sentence-transformers/multi-qa-mpnet-base-cos-v1"
+   },
+   "es": {
+      "index": "nhs_health",
+      "settings": {
+         "number_of_shards": 2,
+         "number_of_replicas": 1
+      },
+      "mappings": {
+         "dynamic": "true",
+         "_source": {
+            "enabled": "true"
+         },
+         "properties": {
+            "url": {
+               "type": "text"
+            },
+            "text": {
+               "type": "text"
+            },
+            "text_vector": {
+               "type": "dense_vector",
+               "dims": 768
+            }
+         }
+      }
+   }
+}
