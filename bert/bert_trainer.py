@@ -173,7 +173,7 @@ class PYBERTTrainer:
                     total_eval_loss += loss.item()
 
         # Report the final accuracy for this validation run.
-        avg_val_accuracy = float(total_eval_accuracy) / float(len(data_loader))*10
+        avg_val_accuracy = float(total_eval_accuracy) / float(len(data_loader.dataset))*100
 
         # Calculate the average loss over all of the batches.
         avg_val_loss = total_eval_loss / len(data_loader)
